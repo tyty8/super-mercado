@@ -11,11 +11,50 @@
   --font-sans: var(--font-inter);
 }
 
+html {
+  /* Avoid mobile font auto-scaling on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 50%, #fff1f2 100%);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   min-height: 100vh;
+  /* Allow content under iOS notch / home indicator via safe-area utilities */
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent iOS Safari from zooming the viewport when focusing form fields.
+   iOS only zooms if the focused input's computed font-size is < 16px. */
+@media (max-width: 639px) {
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Safe-area aware padding helpers (iOS notch / home indicator) */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+.bottom-safe {
+  bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 /* Custom scrollbar */

@@ -366,18 +366,18 @@ export default function Home() {
   );
 
   return (
-    <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-4 sm:py-6 pb-24 lg:pb-6">
+    <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-3 sm:py-6 pb-28 lg:pb-6">
       {/* ─── Toolbar: starter + categories + generic toggle ─── */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 mb-3 sm:mb-4">
         <button
           onClick={loadStarter}
           disabled={loadingStarter}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition"
+          className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400 text-white text-sm font-medium px-4 min-h-[44px] rounded-lg shadow-sm transition"
         >
           {loadingStarter ? (
             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
           )}
@@ -385,22 +385,21 @@ export default function Home() {
         </button>
         <button
           onClick={() => setCategoryOpen((v) => !v)}
-          className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition"
+          className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-300 text-slate-700 text-sm font-medium px-4 min-h-[44px] rounded-lg shadow-sm transition"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
           </svg>
           Categorías
         </button>
-        <label className="inline-flex items-center gap-2 ml-auto bg-white border border-slate-300 px-3 py-2 rounded-lg text-sm text-slate-700 cursor-pointer select-none">
+        <label className="col-span-2 sm:col-auto sm:ml-auto inline-flex items-center justify-center gap-2 bg-white border border-slate-300 px-3 min-h-[44px] rounded-lg text-sm text-slate-700 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={hideStoreBrands}
             onChange={(e) => setHideStoreBrands(e.target.checked)}
-            className="rounded border-slate-300"
+            className="w-4 h-4 rounded border-slate-300"
           />
-          <span className="hidden sm:inline">Ocultar marcas propias</span>
-          <span className="sm:hidden">Sin marca propia</span>
+          <span>Ocultar marcas propias</span>
         </label>
       </div>
 
@@ -487,31 +486,58 @@ export default function Home() {
           {/* Search */}
           <div
             ref={searchRef}
-            className="bg-white rounded-xl shadow-sm border border-slate-200 p-4"
+            className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 sm:p-4"
           >
-            <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
-              <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <h2 className="sr-only sm:not-sr-only text-base sm:text-lg font-semibold text-slate-800 sm:mb-3 sm:flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-600 hidden sm:inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               Buscar Productos
             </h2>
             <div className="relative">
               <input
-                type="text"
+                type="search"
+                inputMode="search"
+                enterKeyHint="search"
+                autoComplete="off"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
-                placeholder="Escribe para buscar... (ej: leche, pollo, arroz)"
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition text-sm"
+                placeholder="Buscar (ej: leche, pollo, arroz)"
+                className="w-full pl-10 pr-10 py-3 min-h-[48px] rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition text-base"
               />
+              <svg
+                className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              {query && !isSearching && (
+                <button
+                  onClick={() => {
+                    setQuery("");
+                    setSearchResults([]);
+                    setShowDropdown(false);
+                  }}
+                  aria-label="Borrar búsqueda"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 active:text-slate-800"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
               {isSearching && (
-                <div className="absolute right-3 top-3.5">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
 
               {showDropdown && filteredSearchResults.length > 0 && (
-                <div className="absolute z-40 top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-slate-200 max-h-80 overflow-y-auto">
+                <div className="absolute z-40 top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-slate-200 max-h-[60vh] sm:max-h-80 overflow-y-auto overscroll-contain">
                   {filteredSearchResults.map((product) => {
                     const min = getMinPrice(product);
                     const ppu = pricePerUnit(min, product.unit);
@@ -519,14 +545,14 @@ export default function Home() {
                       <button
                         key={product.id}
                         onClick={() => addToCart(product)}
-                        className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-slate-100 last:border-b-0 transition"
+                        className="w-full text-left px-4 py-3 min-h-[56px] hover:bg-blue-50 active:bg-blue-100 border-b border-slate-100 last:border-b-0 transition"
                       >
-                        <div className="flex justify-between items-start gap-2">
+                        <div className="flex justify-between items-start gap-3">
                           <div className="min-w-0">
-                            <p className="font-medium text-sm text-slate-800">
+                            <p className="font-medium text-sm text-slate-800 line-clamp-2">
                               {product.name}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
                               {product.brand} · {product.category} · {product.unit}
                             </p>
                           </div>
@@ -781,7 +807,75 @@ export default function Home() {
 
                     {isExpanded && (
                       <div className="border-t border-slate-100 px-4 sm:px-5 pb-4">
-                        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                        {/* Mobile: stacked cards */}
+                        <ul className="sm:hidden divide-y divide-slate-100 mt-2">
+                          {entry.items.map((item) => {
+                            const ppu = pricePerUnit(item.unitPrice, item.unit);
+                            const itemSubs = subs[item.productId];
+                            const missing = item.unitPrice === 0;
+                            return (
+                              <li key={item.productId} className="py-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0 flex-1">
+                                    <p className={`text-sm font-medium ${missing ? "text-amber-700" : "text-slate-800"}`}>
+                                      {item.name}
+                                    </p>
+                                    <p className="text-[11px] text-slate-400 mt-0.5">
+                                      {item.unit}
+                                      {ppu && !missing && <> · {ppu.label}</>}
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                      {missing ? (
+                                        <span className="text-amber-600">No disponible</span>
+                                      ) : (
+                                        <>
+                                          {formatCLP(item.unitPrice)} × {item.quantity}
+                                        </>
+                                      )}
+                                    </p>
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-semibold text-slate-800">
+                                      {item.subtotal > 0 ? formatCLP(item.subtotal) : "—"}
+                                    </p>
+                                  </div>
+                                </div>
+                                {missing && itemSubs && itemSubs.length > 0 && (
+                                  <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs">
+                                    <p className="text-amber-800 font-medium mb-1">
+                                      Sugerencias en {entry.supermarket}:
+                                    </p>
+                                    <div className="space-y-1">
+                                      {itemSubs.map((sub) => (
+                                        <div
+                                          key={sub.productId}
+                                          className="flex items-center justify-between gap-2"
+                                        >
+                                          <span className="text-slate-700 truncate">
+                                            {sub.name}{" "}
+                                            <span className="text-slate-400">({sub.unit})</span>
+                                          </span>
+                                          <span className="font-semibold text-slate-700 shrink-0">
+                                            {formatCLP(sub.price)}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </li>
+                            );
+                          })}
+                          <li className="pt-3 flex items-center justify-between">
+                            <span className="text-sm font-semibold text-slate-800">Total</span>
+                            <span className="text-base font-bold text-slate-800">
+                              {formatCLP(entry.total)}
+                            </span>
+                          </li>
+                        </ul>
+
+                        {/* Desktop / tablet: table */}
+                        <div className="hidden sm:block">
                           <table className="w-full text-sm mt-3">
                             <thead>
                               <tr className="text-slate-500 text-xs">
@@ -877,22 +971,24 @@ export default function Home() {
 
       {/* ─── Mobile bottom bar ─── */}
       {cart.length > 0 && (
-        <button
-          onClick={() => setShowCart(true)}
-          className="lg:hidden fixed bottom-4 right-4 left-4 z-30 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg px-5 py-3 flex items-center justify-between gap-3"
-        >
-          <span className="flex items-center gap-2">
-            <span className="bg-white text-blue-700 text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-              {cartItemCount}
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 px-3 pb-3 pt-2 pb-safe pointer-events-none bg-gradient-to-t from-white via-white/90 to-transparent">
+          <button
+            onClick={() => setShowCart(true)}
+            className="pointer-events-auto w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-full shadow-lg shadow-blue-600/30 px-5 min-h-[56px] flex items-center justify-between gap-3"
+          >
+            <span className="flex items-center gap-2">
+              <span className="bg-white text-blue-700 text-xs font-bold rounded-full min-w-[24px] h-6 px-1.5 flex items-center justify-center">
+                {cartItemCount}
+              </span>
+              <span className="text-sm font-semibold">Mi carro</span>
             </span>
-            Mi carro
-          </span>
-          {cartCheapestTotal > 0 && (
-            <span className="font-bold text-sm">
-              desde {formatCLP(cartCheapestTotal)}
-            </span>
-          )}
-        </button>
+            {cartCheapestTotal > 0 && (
+              <span className="font-bold text-sm">
+                desde {formatCLP(cartCheapestTotal)}
+              </span>
+            )}
+          </button>
+        </div>
       )}
 
       {/* ─── Mobile cart drawer ─── */}
@@ -900,10 +996,16 @@ export default function Home() {
         <div className="lg:hidden fixed inset-0 z-40 flex items-end" onClick={() => setShowCart(false)}>
           <div className="absolute inset-0 bg-black/40" />
           <div
-            className="relative bg-white w-full rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto p-4 animate-fade-in-up"
+            className="relative bg-white w-full rounded-t-2xl shadow-2xl max-h-[85dvh] overflow-y-auto px-4 pt-3 pb-4 pb-safe animate-fade-in-up"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-12 h-1 bg-slate-300 rounded-full mx-auto mb-3" />
+            <button
+              onClick={() => setShowCart(false)}
+              aria-label="Cerrar carro"
+              className="block w-full mb-2"
+            >
+              <span className="block w-12 h-1.5 bg-slate-300 rounded-full mx-auto" />
+            </button>
             <CartContents
               cart={cart}
               cartItemCount={cartItemCount}
@@ -1006,23 +1108,25 @@ function CartContents({
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => updateQuantity(item.product.id, -1)}
-                    className="w-8 h-8 rounded-md bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 flex items-center justify-center text-sm font-bold transition"
+                    aria-label="Disminuir cantidad"
+                    className="w-10 h-10 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 active:bg-slate-200 flex items-center justify-center text-lg font-bold transition"
                   >
                     −
                   </button>
-                  <span className="w-7 text-center text-sm font-semibold text-slate-800">
+                  <span className="w-8 text-center text-base font-semibold text-slate-800 tabular-nums">
                     {item.quantity}
                   </span>
                   <button
                     onClick={() => updateQuantity(item.product.id, 1)}
-                    className="w-8 h-8 rounded-md bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 flex items-center justify-center text-sm font-bold transition"
+                    aria-label="Aumentar cantidad"
+                    className="w-10 h-10 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 active:bg-slate-200 flex items-center justify-center text-lg font-bold transition"
                   >
                     +
                   </button>
                 </div>
                 <button
                   onClick={() => removeFromCart(item.product.id)}
-                  className="text-slate-400 hover:text-red-500 transition p-1 shrink-0"
+                  className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-500 active:text-red-700 transition shrink-0"
                   aria-label="Eliminar"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
