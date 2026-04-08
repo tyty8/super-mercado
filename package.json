@@ -6,7 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "scrape:lider": "node scripts/scrape.mjs --site lider",
+    "scrape:tottus": "node scripts/scrape.mjs --site tottus",
+    "scrape:unimarc": "node scripts/scrape.mjs --site unimarc",
+    "scrape:santaisabel": "node scripts/scrape.mjs --site santaisabel",
+    "merge:lider": "node scripts/merge-prices.mjs --site lider",
+    "merge:tottus": "node scripts/merge-prices.mjs --site tottus",
+    "merge:unimarc": "node scripts/merge-prices.mjs --site unimarc",
+    "merge:santaisabel": "node scripts/merge-prices.mjs --site santaisabel"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
@@ -22,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
+    "puppeteer-core": "^23.11.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
