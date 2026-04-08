@@ -73,6 +73,14 @@ interface CategoryRow {
   count: number;
 }
 
+interface TemplateMeta {
+  id: string;
+  name: string;
+  description: string;
+  iconKey: string;
+  itemCount: number;
+}
+
 const SUPERMARKET_COLORS: Record<string, string> = {
   jumbo: "#00a650",
   lider: "#0071ce",
@@ -80,6 +88,35 @@ const SUPERMARKET_COLORS: Record<string, string> = {
   unimarc: "#e4002b",
   "santa-isabel": "#e30613",
 };
+
+// SVG path for each template iconKey. Heroicons-style outline icons.
+// Unknown iconKeys fall back to LIST_CHECK.
+const LIST_CHECK_PATH =
+  "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4";
+const TEMPLATE_ICON_PATHS: Record<string, string> = {
+  "list-check": LIST_CHECK_PATH,
+  users:
+    "M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-3.13a4 4 0 110-8 4 4 0 010 8zm6 0a4 4 0 100-8 4 4 0 000 8z",
+  sparkles:
+    "M5 3v4M3 5h4M6 17v4M4 19h4M13 3l2.5 6.5L22 12l-6.5 2.5L13 21l-2.5-6.5L4 12l6.5-2.5L13 3z",
+  sun:
+    "M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m0-13.728l1.414 1.414M17.95 17.95l1.414 1.414M16 12a4 4 0 11-8 0 4 4 0 018 0z",
+  leaf:
+    "M3 21l2-2m0 0c4 0 8-1 12-5s5-9 5-13c-4 0-9 1-13 5s-5 8-5 12zm0 0l8-8",
+  dumbbell:
+    "M6 6v12M3 9v6M18 6v12M21 9v6M6 12h12",
+  flame:
+    "M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.24 17 12c.092.683.078 1.348 0 2 .384-1.5 1-1.5 2-2 0 1.5-1 4-1.343 6.657z",
+  carrot:
+    "M3 21l8-8m0 0a4 4 0 015.657 0L21 17.343M11 13l-4-4m4 4l4-4M7 9V5m0 4H3m16 4v4m0-4h4",
+  baby:
+    "M12 3a3 3 0 100 6 3 3 0 000-6zM6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2M9 13l3 3 3-3",
+  paw:
+    "M5 13a2 2 0 11-4 0 2 2 0 014 0zm6-7a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 7a2 2 0 11-4 0 2 2 0 014 0zm-5 7c0 2.5-2.5 4-5 4s-5-1.5-5-4c0-2 2-3.5 2-5.5C7 12 8.5 11 12 11s5 1 5 3.5c0 2 2 3.5 2 5.5z",
+};
+function templateIconPath(key: string): string {
+  return TEMPLATE_ICON_PATHS[key] || LIST_CHECK_PATH;
+}
 
 const STORAGE_KEY = "super-mercado-cart-v1";
 
@@ -127,8 +164,11 @@ export default function Home() {
   const [categoryProducts, setCategoryProducts] = useState<Product[]>([]);
   const [loadingCategory, setLoadingCategory] = useState(false);
 
-  // Starter list
-  const [loadingStarter, setLoadingStarter] = useState(false);
+  // Templates
+  const [templates, setTemplates] = useState<TemplateMeta[]>([]);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [loadingTemplateId, setLoadingTemplateId] = useState<string | null>(null);
+  const [replaceCartMode, setReplaceCartMode] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -182,12 +222,18 @@ export default function Home() {
     } catch {}
   }, [cart]);
 
-  // ─── Fetch categories on first load ───
+  // ─── Fetch categories + templates metadata on first load ───
   useEffect(() => {
     fetch("/api/categories")
       .then((r) => r.json())
       .then((data: { categories: CategoryRow[] }) => {
         if (Array.isArray(data.categories)) setCategories(data.categories);
+      })
+      .catch(() => {});
+    fetch("/api/templates")
+      .then((r) => r.json())
+      .then((data: { templates: TemplateMeta[] }) => {
+        if (Array.isArray(data.templates)) setTemplates(data.templates);
       })
       .catch(() => {});
   }, []);
@@ -309,20 +355,42 @@ export default function Home() {
     }
   };
 
-  // ─── Starter list ───
-  const loadStarter = async () => {
-    setLoadingStarter(true);
+  // ─── Templates ───
+  const loadTemplate = async (id: string) => {
+    setLoadingTemplateId(id);
     try {
-      const res = await fetch("/api/starter");
-      const data: { products: Product[] } = await res.json();
-      const newCart: CartItem[] = (data.products || []).map((p) => ({
-        product: p,
-        quantity: 1,
-      }));
-      setCart(newCart);
-      setCategoryOpen(false);
-    } catch {} finally {
-      setLoadingStarter(false);
+      const res = await fetch(`/api/templates?id=${encodeURIComponent(id)}`);
+      const data: { products?: Product[] } = await res.json();
+      const products = data.products || [];
+      if (products.length === 0) {
+        setShareToast("No se encontraron productos para esta plantilla");
+        setTimeout(() => setShareToast(null), 3000);
+        return;
+      }
+      const newItems: CartItem[] = products.map((p) => ({ product: p, quantity: 1 }));
+      if (replaceCartMode) {
+        setCart(newItems);
+      } else {
+        setCart((prev) => {
+          const byId = new Map(prev.map((c) => [c.product.id, c]));
+          for (const item of newItems) {
+            if (!byId.has(item.product.id)) byId.set(item.product.id, item);
+          }
+          return Array.from(byId.values());
+        });
+      }
+      setTemplatesOpen(false);
+      setShareToast(
+        replaceCartMode
+          ? `Carro reemplazado · ${products.length} productos`
+          : `Agregaste ${products.length} productos al carro`
+      );
+      setTimeout(() => setShareToast(null), 3000);
+    } catch {
+      setShareToast("Error cargando plantilla");
+      setTimeout(() => setShareToast(null), 3000);
+    } finally {
+      setLoadingTemplateId(null);
     }
   };
 
@@ -367,24 +435,25 @@ export default function Home() {
 
   return (
     <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 py-3 sm:py-6 pb-28 lg:pb-6">
-      {/* ─── Toolbar: starter + categories + generic toggle ─── */}
+      {/* ─── Toolbar: templates + categories + generic toggle ─── */}
       <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 mb-3 sm:mb-4">
         <button
-          onClick={loadStarter}
-          disabled={loadingStarter}
-          className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400 text-white text-sm font-medium px-4 min-h-[44px] rounded-lg shadow-sm transition"
+          onClick={() => {
+            setTemplatesOpen((v) => !v);
+            if (!templatesOpen) setCategoryOpen(false);
+          }}
+          className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium px-4 min-h-[44px] rounded-lg shadow-sm transition"
         >
-          {loadingStarter ? (
-            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-          )}
-          Lista básica
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d={LIST_CHECK_PATH} />
+          </svg>
+          Plantillas
         </button>
         <button
-          onClick={() => setCategoryOpen((v) => !v)}
+          onClick={() => {
+            setCategoryOpen((v) => !v);
+            if (!categoryOpen) setTemplatesOpen(false);
+          }}
           className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-300 text-slate-700 text-sm font-medium px-4 min-h-[44px] rounded-lg shadow-sm transition"
         >
           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -402,6 +471,77 @@ export default function Home() {
           <span>Ocultar marcas propias</span>
         </label>
       </div>
+
+      {/* ─── Templates drawer ─── */}
+      {templatesOpen && (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4 animate-fade-in-up">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <h3 className="text-lg font-semibold text-slate-800">Plantillas</h3>
+            <button
+              onClick={() => setTemplatesOpen(false)}
+              className="text-slate-400 hover:text-slate-600 p-1"
+              aria-label="Cerrar plantillas"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Elige una plantilla para llenar tu carro con productos sugeridos.
+            </p>
+            <label className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 min-h-[36px] rounded-lg text-xs text-slate-700 cursor-pointer select-none shrink-0">
+              <input
+                type="checkbox"
+                checked={replaceCartMode}
+                onChange={(e) => setReplaceCartMode(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-300"
+              />
+              <span>Reemplazar carro</span>
+            </label>
+          </div>
+
+          {templates.length === 0 ? (
+            <div className="text-center py-8 text-slate-400 text-sm">Cargando plantillas...</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {templates.map((t) => {
+                const isLoading = loadingTemplateId === t.id;
+                const isDisabled = loadingTemplateId !== null && !isLoading;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => loadTemplate(t.id)}
+                    disabled={isDisabled || isLoading}
+                    className={`text-left p-3 min-h-[64px] rounded-lg border transition flex items-center gap-3 ${
+                      isLoading
+                        ? "bg-blue-50 border-blue-300 ring-2 ring-blue-200"
+                        : "bg-slate-50 hover:bg-blue-50 active:bg-blue-100 border-slate-100"
+                    } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    <span className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-blue-600 shrink-0">
+                      {isLoading ? (
+                        <span className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d={templateIconPath(t.iconKey)} />
+                        </svg>
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-slate-800 truncate">{t.name}</span>
+                      <span className="block text-xs text-slate-500 truncate">{t.description}</span>
+                      <span className="block text-[11px] text-slate-400 mt-0.5">{t.itemCount} productos</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ─── Category drawer ─── */}
       {categoryOpen && (
